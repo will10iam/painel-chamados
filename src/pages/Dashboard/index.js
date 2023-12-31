@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { db } from "../../services/firebaseConection";
 import { collection, orderBy, limit, getDocs, startAfter, query } from "firebase/firestore";
 import { format } from "date-fns";
+import Modal from "../../components/Modal";
 
 
 
@@ -19,6 +20,9 @@ export default function Dashboard() {
     const [isEmpty, setIsEmpty] = useState(false);
     const [lastDocs, setLastDocs] = useState();
     const [loadingMore, setLoadingMore] = useState(false);
+
+    const [showPostModal, setShowPostModal] = useState(false);
+    const [detail, setDetail] = useState()
 
     useEffect(() => {
         async function loadChamados() {
@@ -77,6 +81,11 @@ export default function Dashboard() {
         await updateState(querySnapshot);
     }
 
+    function toggleModal(item) {
+        setShowPostModal(!showPostModal)
+        setDetail(item)
+    }
+
     if (loading) {
         return (
             <div>
@@ -97,7 +106,6 @@ export default function Dashboard() {
 
 
 
-
     return (
         <>
             <Sidebar />
@@ -105,10 +113,7 @@ export default function Dashboard() {
                 <Title name="Tickets">
                     <FiMessageSquare size={25} />
                 </Title>
-
                 <>
-
-
                     {chamados.length === 0 ? (
                         <div className="container dashboard">
                             <span>Nenhum chamado encontrado...</span>
@@ -141,18 +146,18 @@ export default function Dashboard() {
                                                 <td data-label="Cliente">{item.cliente}</td>
                                                 <td data-label="Assunto">{item.assunto}</td>
                                                 <td data-label="Status">
-                                                    <span className="badge" style={{ backgroundColor: item.status === 'Aberto' ? '#5cb85c' : '#999' }}>
+                                                    <span className="badge" style={{ backgroundColor: item.status === 'Aberto' ? '#3583f6' : item.status === ' Em Progresso' ? '#f6a935' : item.status === 'Finalizado' ? '#5cb85c' : '#999' }}>
                                                         {item.status}
                                                     </span>
                                                 </td>
                                                 <td data-label="Cadastrado">{item.createdFormat}</td>
                                                 <td data-label="#">
-                                                    <button className="action" style={{ backgroundColor: '#3583f6' }}>
+                                                    <button className="action" style={{ backgroundColor: '#3583f6' }} onClick={() => toggleModal(item)}>
                                                         <FiSearch color='#FFF' size={17} />
                                                     </button>
-                                                    <button className="action" style={{ backgroundColor: '#f6a935' }}>
+                                                    <Link to={`/new/${item.id}`} className="action" style={{ backgroundColor: '#f6a935' }}>
                                                         <FiEdit2 color='#FFF' size={17} />
-                                                    </button>
+                                                    </Link>
                                                 </td>
 
                                             </tr>
@@ -170,6 +175,16 @@ export default function Dashboard() {
                     )}
                 </>
             </div>
+
+            {showPostModal && (
+                <Modal
+                    conteudo={detail}
+                    close={() => setShowPostModal(!showPostModal)}
+
+                />
+
+
+            )}
         </>
     )
 }
